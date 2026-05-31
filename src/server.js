@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import pino from 'pino-http';
 import 'dotenv/config';
+import { connectMongoDB } from './db/connectMongoDB.js';
+import { Customer } from './models/customer.js';
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
@@ -25,8 +27,9 @@ app.use(
   }),
 );
 
-app.get('/test-error', (req, res) => {
-  throw new Error('Something went wrong');
+app.get('/customers', async (req, res) => {
+  const customers = await Customer.find();
+  return res.status(200).json(customers);
 });
 
 app.use((req, res) => {
@@ -42,6 +45,8 @@ app.use((err, req, res, next) => {
       : err.message,
   });
 });
+
+await connectMongoDB();
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}....`);
