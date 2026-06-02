@@ -4,11 +4,17 @@ import {
   getSuppliers,
   updateSupplier,
 } from '../controllers/suppliersController.js';
+import { celebrate } from 'celebrate';
+import { updateSupplierSchema } from '../validations/supplierValidation.js';
 
 const router = new Router();
 
 router.get('/suppliers', getSuppliers);
 router.post('/suppliers', addSupplier);
-router.put('/suppliers/:supplierId', updateSupplier);
+router.patch(
+  '/suppliers/:supplierId',
+  celebrate(updateSupplierSchema),
+  updateSupplier,
+);
 
 export default router;
