@@ -2,7 +2,7 @@ import { model, Schema } from 'mongoose';
 
 const customerSchema = new Schema(
   {
-    photo: {
+    image: {
       type: String,
     },
     name: {
@@ -16,7 +16,7 @@ const customerSchema = new Schema(
       trim: true,
     },
     spent: {
-      type: Number,
+      type: String,
     },
     phone: {
       type: String,
@@ -25,7 +25,7 @@ const customerSchema = new Schema(
       type: String,
       required: true,
     },
-    registerDate: {
+    register_date: {
       type: String,
       required: true,
     },
