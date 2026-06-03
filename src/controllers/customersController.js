@@ -1,15 +1,15 @@
 import { Customer } from '../models/customer.js';
+import {
+  calculatePaginationData,
+  parsePaginationParams,
+} from '../utils/pagination.js';
+import { parseSortParams } from '../utils/sort.js';
 
 export const getCustomers = async (req, res, next) => {
-  const {
-    page = 1,
-    perPage = 10,
-    name,
-    sortBy = '_id',
-    sortOrder = 'asc',
-  } = req.query;
+  const { name } = req.query;
 
-  const skip = (page - 1) * perPage;
+  const { page, perPage, skip } = parsePaginationParams(req.query);
+  const { sortBy, sortOrder } = parseSortParams(req.query);
 
   const customersQuery = Customer.find();
 
@@ -29,13 +29,10 @@ export const getCustomers = async (req, res, next) => {
       }),
   ]);
 
-  const totalPages = Math.ceil(totalItems / perPage);
+  const paginationData = calculatePaginationData(totalItems, page, perPage);
 
   res.status(200).json({
-    page,
-    perPage,
-    totalItems,
-    totalPages,
+    ...paginationData,
     customers,
   });
 };
