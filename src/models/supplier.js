@@ -18,13 +18,12 @@ const supplierSchema = new Schema(
       trim: true,
     },
     date: {
-      type: Date,
+      type: String,
       required: true,
     },
     amount: {
-      type: Number,
+      type: String,
       required: true,
-      min: 0,
     },
     status: {
       type: String,

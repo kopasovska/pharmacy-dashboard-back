@@ -1,9 +1,34 @@
 import createHttpError from 'http-errors';
 import { Supplier } from '../models/supplier.js';
+import {
+  calculatePaginationData,
+  parsePaginationParams,
+} from '../utils/pagination.js';
+import { parseSortParams } from '../utils/sort.js';
 
 export const getSuppliers = async (req, res) => {
-  const suppliers = await Supplier.find();
-  return res.status(200).json(suppliers);
+  const { name } = req.query;
+
+  const { page, perPage, skip } = parsePaginationParams(req.query);
+  const { sortBy, sortOrder } = parseSortParams(req.query);
+
+  const suppliersQuery = Supplier.find();
+
+  if (name) {
+    suppliersQuery.where({ name: { $regex: name, $options: 'i' } });
+  }
+
+  const [totalItems, suppliers] = await Promise.all([
+    suppliersQuery.clone().countDocuments(),
+    suppliersQuery
+      .skip(skip)
+      .limit(perPage)
+      .sort({ [sortBy]: sortOrder }),
+  ]);
+
+  const paginationData = calculatePaginationData(totalItems, page, perPage);
+
+  return res.status(200).json({ ...paginationData, suppliers });
 };
 
 export const addSupplier = async (req, res) => {

@@ -5,11 +5,14 @@ import {
   updateSupplier,
 } from '../controllers/suppliersController.js';
 import { celebrate } from 'celebrate';
-import { updateSupplierSchema } from '../validations/supplierValidation.js';
+import {
+  getSuppliersSchema,
+  updateSupplierSchema,
+} from '../validations/supplierValidation.js';
 
 const router = new Router();
 
-router.get('/suppliers', getSuppliers);
+router.get('/suppliers', celebrate(getSuppliersSchema), getSuppliers);
 router.post('/suppliers', addSupplier);
 router.patch(
   '/suppliers/:supplierId',
