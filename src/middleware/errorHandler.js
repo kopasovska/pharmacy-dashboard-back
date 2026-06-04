@@ -3,7 +3,7 @@ import createHttpError from 'http-errors';
 export const errorHandler = (err, req, res, next) => {
   console.error('Error Middleware:', err);
 
-  if (err instanceof createHttpError) {
+  if (createHttpError.isHttpError(err)) {
     return res.status(err.status).json({
       message: err.message || err.name,
     });
