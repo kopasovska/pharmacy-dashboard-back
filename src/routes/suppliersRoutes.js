@@ -9,8 +9,11 @@ import {
   getSuppliersSchema,
   updateSupplierSchema,
 } from '../validations/supplierValidation.js';
+import { authenticate } from '../middleware/authenticate.js';
 
 const router = new Router();
+
+router.use('/suppliers', authenticate);
 
 router.get('/suppliers', celebrate(getSuppliersSchema), getSuppliers);
 router.post('/suppliers', addSupplier);
