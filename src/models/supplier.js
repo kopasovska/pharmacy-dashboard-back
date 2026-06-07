@@ -37,4 +37,6 @@ const supplierSchema = new Schema(
   },
 );
 
+supplierSchema.index({ name: 1 });
+
 export const Supplier = model('Supplier', supplierSchema);

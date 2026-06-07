@@ -36,4 +36,6 @@ const customerSchema = new Schema(
   },
 );
 
+customerSchema.index({ name: 1 });
+
 export const Customer = model('Customer', customerSchema);
