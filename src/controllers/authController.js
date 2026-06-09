@@ -33,6 +33,7 @@ export const registerUser = async (req, res) => {
 };
 
 export const loginUser = async (req, res) => {
+  debugger;
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
@@ -136,5 +137,30 @@ export const requestResetEmail = async (req, res) => {
 
   res.status(200).json({
     message: 'If this email exists, a reset link has been sent',
+  });
+};
+
+export const resetPassword = async (req, res) => {
+  const { password, token } = req.body;
+
+  let payload;
+  try {
+    payload = jwt.verify(token, process.env.JWT_SECRET);
+  } catch {
+    throw createHttpError(401, 'Invalid or expired token');
+  }
+
+  const user = await User.findOne({ _id: payload.sub, email: payload.email });
+  if (!user) {
+    throw createHttpError(404, 'User not found');
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  await User.updateOne({ _id: user._id }, { password: hashedPassword });
+
+  await Session.deleteMany({ userId: user._id });
+
+  res.status(200).json({
+    message: 'Password reset successfully. Please log in again.',
   });
 };
