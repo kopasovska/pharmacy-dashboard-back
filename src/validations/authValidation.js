@@ -27,3 +27,9 @@ export const resetPasswordSchema = {
     token: Joi.string().required(),
   }),
 };
+
+export const loginWithGoogleOAuthSchema = {
+  [Segments.BODY]: Joi.object({
+    code: Joi.string().required(),
+  }),
+};

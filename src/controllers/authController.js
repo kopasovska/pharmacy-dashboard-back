@@ -9,6 +9,11 @@ import { sendEmail } from '../utils/sendEmail.js';
 import { User } from '../models/user.js';
 import { createSession, setSessionCookies } from '../services/auth.js';
 import { Session } from '../models/session.js';
+import {
+  generateAuthUrl,
+  getFullNameFromGoogleTokenPayload,
+  validateCode,
+} from '../utils/googleOAuth2.js';
 
 export const registerUser = async (req, res) => {
   const { username, email, password } = req.body;
@@ -33,7 +38,6 @@ export const registerUser = async (req, res) => {
 };
 
 export const loginUser = async (req, res) => {
-  debugger;
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
@@ -162,5 +166,40 @@ export const resetPassword = async (req, res) => {
 
   res.status(200).json({
     message: 'Password reset successfully. Please log in again.',
+  });
+};
+
+export const getGoogleOAuthUrl = async (req, res) => {
+  const url = generateAuthUrl();
+  res.json({
+    status: 200,
+    message: 'Successfully get Google OAuth url!',
+    data: {
+      url,
+    },
+  });
+};
+
+export const loginWithGoogle = async (req, res) => {
+  const loginTicket = await validateCode(req.body.code);
+  const payload = loginTicket.getPayload();
+  if (!payload) throw createHttpError(401);
+
+  let user = await User.findOne({ email: payload.email });
+  if (!user) {
+    const password = await bcrypt.hash(crypto.randomBytes(10), 10);
+    user = await User.create({
+      email: payload.email,
+      name: getFullNameFromGoogleTokenPayload(payload),
+      password,
+    });
+  }
+
+  const newSession = await createSession(user._id);
+  setSessionCookies(res, newSession);
+
+  res.json({
+    status: 200,
+    message: 'Successfully logged in via Google OAuth!',
   });
 };
