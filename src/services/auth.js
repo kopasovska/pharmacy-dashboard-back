@@ -1,35 +1,21 @@
-import { FIFTEEN_MINUTES, ONE_DAY } from '../constants/time.js';
-import { Session } from '../models/session.js';
+import createHttpError from 'http-errors';
+import bcrypt from 'bcrypt';
+import { User } from '../models/user.js';
 
-export const createSession = async (userId) => {
-  return Session.create({
-    userId,
-    accessToken: crypto.randomUUID(),
-    refreshToken: crypto.randomUUID(),
-    accessTokenValidUntil: new Date(Date.now() + FIFTEEN_MINUTES),
-    refreshTokenValidUntil: new Date(Date.now() + ONE_DAY),
-  });
-};
+export const registerUserService = async ({ username, email, password }) => {
+  const existingUser = await User.findOne({ email });
 
-export const setSessionCookies = (res, session) => {
-  res.cookie('accessToken', session.accessToken, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'none',
-    maxAge: FIFTEEN_MINUTES,
+  if (existingUser) {
+    throw createHttpError(400, 'Email in use');
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const user = await User.create({
+    username,
+    email,
+    password: hashedPassword,
   });
 
-  res.cookie('refreshToken', session.refreshToken, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'none',
-    maxAge: ONE_DAY,
-  });
-
-  res.cookie('sessionId', session._id, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'none',
-    maxAge: ONE_DAY,
-  });
+  return user;
 };

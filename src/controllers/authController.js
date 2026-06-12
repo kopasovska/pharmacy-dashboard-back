@@ -14,22 +14,10 @@ import {
   getFullNameFromGoogleTokenPayload,
   validateCode,
 } from '../utils/googleOAuth2.js';
+import { registerUserService } from '../services/auth.js';
 
 export const registerUser = async (req, res) => {
-  const { username, email, password } = req.body;
-
-  const existingUser = await User.findOne({ email });
-  if (existingUser) {
-    throw createHttpError(400, 'Email in use');
-  }
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  const newUser = await User.create({
-    username,
-    email,
-    password: hashedPassword,
-  });
+  const newUser = registerUserService({ ...req.body });
 
   const newSession = await createSession(newUser._id);
   setSessionCookies(res, newSession);
