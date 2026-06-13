@@ -7,17 +7,17 @@ import fs from 'node:fs/promises';
 
 import { sendEmail } from '../utils/sendEmail.js';
 import { User } from '../models/user.js';
-import { createSession, setSessionCookies } from '../services/auth.js';
+import { createSession, setSessionCookies } from '../services/session.js';
 import { Session } from '../models/session.js';
 import {
   generateAuthUrl,
   getFullNameFromGoogleTokenPayload,
   validateCode,
 } from '../utils/googleOAuth2.js';
-import { registerUserService } from '../services/auth.js';
+import { registerUserService, loginUserService } from '../services/auth.js';
 
 export const registerUser = async (req, res) => {
-  const newUser = registerUserService({ ...req.body });
+  const newUser = await registerUserService({ ...req.body });
 
   const newSession = await createSession(newUser._id);
   setSessionCookies(res, newSession);
@@ -26,16 +26,8 @@ export const registerUser = async (req, res) => {
 };
 
 export const loginUser = async (req, res) => {
-  const { email, password } = req.body;
+  const { user, newSession } = await loginUserService({ ...req.body });
 
-  const user = await User.findOne({ email });
-  if (!user) throw createHttpError(404, 'Invalid credentials');
-
-  const isValidPassword = await bcrypt.compare(password, user.password);
-  if (!isValidPassword) throw createHttpError(400, 'Invalid credentials');
-
-  await Session.deleteOne({ userId: user._id });
-  const newSession = await createSession(user._id);
   setSessionCookies(res, newSession);
 
   return res.status(200).json(user);

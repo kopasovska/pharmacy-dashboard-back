@@ -11,6 +11,12 @@ export const createSession = async (userId) => {
   });
 };
 
+export const renewSession = async (userId) => {
+  await Session.deleteOne({ userId });
+  const newSession = await createSession(userId);
+  return newSession;
+};
+
 export const setSessionCookies = (res, session) => {
   res.cookie('accessToken', session.accessToken, {
     httpOnly: true,

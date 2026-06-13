@@ -4,7 +4,6 @@ const userSchema = new Schema(
   {
     username: {
       type: String,
-      unique: true,
       required: true,
       trim: true,
     },
@@ -22,7 +21,7 @@ const userSchema = new Schema(
   {
     timestamps: true,
     versionKey: false,
-   },
+  },
 );
 
 userSchema.pre('save', function () {
