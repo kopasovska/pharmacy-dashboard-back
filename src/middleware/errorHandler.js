@@ -3,6 +3,12 @@ import createHttpError from 'http-errors';
 export const errorHandler = (err, req, res, next) => {
   console.error('Error Middleware:', err);
 
+  if (err.status === 401) {
+    res.clearCookie('sessionId');
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+  }
+
   if (createHttpError.isHttpError(err)) {
     return res.status(err.status).json({
       message: err.message || err.name,
