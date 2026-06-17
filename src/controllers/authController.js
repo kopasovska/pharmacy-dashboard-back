@@ -1,9 +1,5 @@
 import createHttpError from 'http-errors';
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
-
-import { User } from '../models/user.js';
-import { Session } from '../models/session.js';
+import { generateAuthUrl } from '../utils/googleOAuth2.js';
 
 import {
   createSession,
@@ -16,12 +12,8 @@ import {
   loginUserService,
   requestResetEmailService,
   resetPasswordService,
+  loginWithGoogleService,
 } from '../services/auth.js';
-import {
-  generateAuthUrl,
-  getFullNameFromGoogleTokenPayload,
-  validateCode,
-} from '../utils/googleOAuth2.js';
 
 export const registerUser = async (req, res) => {
   const newUser = await registerUserService({ ...req.body });
@@ -99,19 +91,7 @@ export const getGoogleOAuthUrl = async (req, res) => {
 };
 
 export const loginWithGoogle = async (req, res) => {
-  const loginTicket = await validateCode(req.body.code);
-  const payload = loginTicket.getPayload();
-  if (!payload) throw createHttpError(401);
-
-  let user = await User.findOne({ email: payload.email });
-  if (!user) {
-    const password = await bcrypt.hash(crypto.randomBytes(10), 10);
-    user = await User.create({
-      email: payload.email,
-      name: getFullNameFromGoogleTokenPayload(payload),
-      password,
-    });
-  }
+  const user = await loginWithGoogleService(req.body.code);
 
   const newSession = await createSession(user._id);
   setSessionCookies(res, newSession);

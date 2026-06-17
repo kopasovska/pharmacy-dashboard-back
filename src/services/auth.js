@@ -9,6 +9,10 @@ import { User } from '../models/user.js';
 
 import { deleteSessionsByUserId, renewSession } from '../services/session.js';
 import { sendEmail } from '../utils/sendEmail.js';
+import {
+  getFullNameFromGoogleTokenPayload,
+  validateCode,
+} from '../utils/googleOAuth2.js';
 
 export const registerUserService = async ({ username, email, password }) => {
   const existingUser = await User.findOne({ email });
@@ -92,4 +96,21 @@ export const resetPasswordService = async (password, token) => {
   await User.updateOne({ _id: user._id }, { password: hashedPassword });
 
   await deleteSessionsByUserId(user._id);
+};
+
+export const loginWithGoogleService = async (code) => {
+  const loginTicket = await validateCode(code);
+  const payload = loginTicket.getPayload();
+  if (!payload) throw createHttpError(401);
+
+  let user = await User.findOne({ email: payload.email });
+  if (!user) {
+    const password = await bcrypt.hash(crypto.randomBytes(10), 10);
+    user = await User.create({
+      email: payload.email,
+      name: getFullNameFromGoogleTokenPayload(payload),
+      password,
+    });
+  }
+  return user;
 };
