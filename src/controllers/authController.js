@@ -25,9 +25,8 @@ export const registerUser = async (req, res) => {
 };
 
 export const loginUser = async (req, res) => {
-  const { user, newSession } = await loginUserService({ ...req.body });
-
-  setSessionCookies(res, newSession);
+  const { user, session } = await loginUserService({ ...req.body });
+  setSessionCookies(res, session);
 
   return res.status(200).json(user);
 };
