@@ -1,3 +1,4 @@
+import createHttpError from 'http-errors';
 import { Supplier } from '../models/supplier.js';
 import {
   calculatePaginationData,
@@ -35,4 +36,12 @@ export const addSupplierService = async (body) => {
   return newSupplier;
 };
 
-export const updateSupplierService = async(supplierId, boddy);
+export const updateSupplierService = async (supplierId, body) => {
+  const supplier = await Supplier.findOneAndUpdate({ _id: supplierId }, body, {
+    returnDocument: 'after',
+  });
+  if (!supplier) {
+    throw createHttpError(404, 'Supplier not found');
+  }
+  return supplier;
+};
