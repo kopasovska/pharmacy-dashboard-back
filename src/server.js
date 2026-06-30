@@ -11,6 +11,7 @@ import { errorHandler } from './middleware/errorHandler.js';
 
 import customersRoutes from './routes/customersRoutes.js';
 import suppliersRoutes from './routes/suppliersRoutes.js';
+import ordersRoutes from './routes/ordersRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 
 const app = express();
@@ -23,6 +24,7 @@ app.use(cookieParser());
 
 app.use(customersRoutes);
 app.use(suppliersRoutes);
+app.use(ordersRoutes);
 app.use(authRoutes);
 
 app.use(notFoundHandler);
